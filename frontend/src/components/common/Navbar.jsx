@@ -56,7 +56,7 @@ const Navbar = () => {
               Analytics
             </Link>
             <div className={styles.divider} />
-            <span className={styles.userName}>{user?.name}</span>
+            {/* <span className={styles.userName}>{user?.name}</span> */}
             <button className={styles.logoutBtn} onClick={handleLogout}>
               Sign Out
             </button>
