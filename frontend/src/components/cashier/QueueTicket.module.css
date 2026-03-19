@@ -1,12 +1,13 @@
 .ticket {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 12px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   transition: all 0.25s ease;
+  flex-wrap: wrap;
 }
 
 .ticket:hover {
@@ -20,11 +21,18 @@
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.08);
 }
 
-
+/* Top row: number + info + position + badge */
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
 
 .number {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 10px;
   border: 1px solid;
   display: flex;
@@ -32,13 +40,17 @@
   justify-content: center;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 13px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
 .info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .name {
@@ -53,19 +65,20 @@
 .meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 3px;
+  gap: 4px;
+  margin-top: 2px;
+  flex-wrap: wrap;
 }
 
 .txType {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
-.dot { color: var(--text-muted); font-size: 12px; }
+.dot { color: var(--text-muted); font-size: 11px; }
 
 .time {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
 }
 
@@ -80,7 +93,7 @@
 .posNum {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--accent);
 }
 
@@ -93,7 +106,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 20px;
   border: 1px solid;
   font-size: 11px;
@@ -114,8 +127,21 @@
   50% { opacity: 0.5; transform: scale(0.8); }
 }
 
+/* Actions always on their own row on mobile */
 .actions {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+@media (min-width: 640px) {
+  .ticket {
+    flex-wrap: nowrap;
+  }
+
+  .actions {
+    width: auto;
+  }
 }

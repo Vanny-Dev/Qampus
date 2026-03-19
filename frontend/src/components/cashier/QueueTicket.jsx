@@ -18,44 +18,43 @@ const QueueTicket = ({ ticket, position, onServe, onSkip, onRepeat, showActions 
 
   return (
     <div className={`${styles.ticket} ${isCalled ? styles.called : ""}`}>
-      {/* Ticket number */}
-      <div className={styles.number} style={{ color: statusInfo.color, borderColor: `${statusInfo.color}30`, background: `${statusInfo.color}10` }}>
-        #{String(ticket.ticketNumber).padStart(3, "0")}
+
+      {/* Top row: number + info + position + badge */}
+      <div className={styles.topRow}>
+        <div className={styles.number} style={{ color: statusInfo.color, borderColor: `${statusInfo.color}30`, background: `${statusInfo.color}10` }}>
+          #{String(ticket.ticketNumber).padStart(3, "0")}
+        </div>
+
+        <div className={styles.info}>
+          <div className={styles.name}>{ticket.name}</div>
+          <div className={styles.meta}>
+            <span className={styles.txType}>{ticket.transactionType}</span>
+            <span className={styles.dot}>·</span>
+            <span className={styles.time}>{waitMinutes}m waiting</span>
+          </div>
+        </div>
+
+        {position && (
+          <div className={styles.pos}>
+            <span className={styles.posNum}>#{position}</span>
+            <span className={styles.posLabel}>in line</span>
+          </div>
+        )}
+
+        <span className={styles.badge} style={{ color: statusInfo.color, background: `${statusInfo.color}15`, borderColor: `${statusInfo.color}30` }}>
+          {isCalled && <span className={styles.pulseDot} style={{ background: statusInfo.color }} />}
+          {statusInfo.label}
+        </span>
       </div>
 
-      {/* Info */}
-      <div className={styles.info}>
-        <div className={styles.name}>{ticket.name}</div>
-        <div className={styles.meta}>
-          <span className={styles.txType}>{ticket.transactionType}</span>
-          <span className={styles.dot}>·</span>
-          <span className={styles.time}>{waitMinutes}m waiting</span>
-        </div>
-      </div>
-
-      {/* Position */}
-      {position && (
-        <div className={styles.pos}>
-          <span className={styles.posNum}>#{position}</span>
-          <span className={styles.posLabel}>in line</span>
-        </div>
-      )}
-
-      {/* Status badge */}
-      <span className={styles.badge} style={{ color: statusInfo.color, background: `${statusInfo.color}15`, borderColor: `${statusInfo.color}30` }}>
-        {isCalled && <span className={styles.pulseDot} style={{ background: statusInfo.color }} />}
-        {statusInfo.label}
-      </span>
-
-      {/* Actions */}
+      {/* Actions row */}
       {showActions && (
         <div className={styles.actions}>
           {isCalled && onRepeat && (
-            <Button variant="ghost" size="sm" onClick={() => onRepeat(ticket._id)} title="Re-announce to payor">
+            <Button variant="ghost" size="sm" onClick={() => onRepeat(ticket._id)}>
               🔔 Repeat
             </Button>
           )}
-          {/* Only show Serve button when AUTO_CALL_NEXT is false */}
           {isCalled && onServe && !AUTO_CALL_NEXT && (
             <Button variant="success" size="sm" onClick={() => onServe(ticket._id)}>✓ Serve</Button>
           )}
@@ -64,6 +63,7 @@ const QueueTicket = ({ ticket, position, onServe, onSkip, onRepeat, showActions 
           )}
         </div>
       )}
+
     </div>
   );
 };
