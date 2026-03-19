@@ -449,7 +449,7 @@ export default function HomePage() {
                   </div>
                   {validating && <span className={styles.fieldHint}>🔍 Looking for this ID…</span>}
                   {!validating && studentNoError && <span className={styles.fieldError}>{studentNoError}</span>}
-                  {!validating && studentValid && studentName && <span className={styles.fieldSuccess}>✓ {studentName}</span>}
+                  {/* {!validating && studentValid && studentName && <span className={styles.fieldSuccess}>✓ {studentName}</span>} */}
                 </div>
 
                 {/* Full Name — disabled, auto-filled */}
