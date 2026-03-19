@@ -7,6 +7,10 @@ import Button from "../components/common/Button";
 import { useToast } from "../components/common/Toast";
 import styles from "./Home.module.css";
 import useNotifications from "../hooks/useNotifications";
+import { LucideMessageCircleWarning } from "lucide-react"
+
+// ─── Feature flags ───────────────────────────────────────────────────────────
+const QUEUE_OPEN = import.meta.env.VITE_GET_MY_TICKET !== "false"; // default open
 
 // ─── Audio & Vibration ───────────────────────────────────────────────────────
 const playBeep = (type = "alert") => {
@@ -430,7 +434,7 @@ export default function HomePage() {
                     <input
                       className={`${styles.input} ${studentNoError ? styles.inputError : studentValid ? styles.inputValid : ""}`}
                       type="text"
-                      placeholder="e.g. 25-00343"
+                      placeholder="e.g. 00-00000"
                       value={studentNo}
                       onChange={(e) => {
                         setStudentNo(e.target.value);
@@ -465,12 +469,18 @@ export default function HomePage() {
                   />
                 </div>
 
+                {!QUEUE_OPEN && (
+                  <div className={styles.queueClosed}>
+                    <LucideMessageCircleWarning size={16} />
+                    Queue is closed for now.
+                  </div>
+                )}
                 <Button
                   variant="primary"
                   size="lg"
                   onClick={handleJoin}
                   loading={joining}
-                  disabled={!studentValid || validating}
+                  disabled={!studentValid || validating || !QUEUE_OPEN}
                   fullWidth
                 >
                   Get My Ticket →
