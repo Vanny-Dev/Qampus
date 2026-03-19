@@ -426,7 +426,7 @@ select.input option {
   flex-shrink: 0;
 }
 
-.rowInfo { flex: 1; }
+.rowInfo { flex: 1; text-align: center; }
 .rowName { font-size: 13px; font-weight: 600; }
 .rowTx { font-size: 11px; color: var(--text-muted); }
 
