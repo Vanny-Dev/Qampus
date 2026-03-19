@@ -117,7 +117,7 @@ const FeedbackModal = ({ ticketId, onClose }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
-        <div className={styles.modalEmoji}>🎉</div>
+        {/* <div className={styles.modalEmoji}>🎉</div> */}
         <h2 className={styles.modalTitle}>Transaction Complete!</h2>
         <p className={styles.modalSub}>How was your experience today?</p>
         <div className={styles.stars}>
@@ -134,7 +134,7 @@ const FeedbackModal = ({ ticketId, onClose }) => {
         />
         <div className={styles.modalActions}>
           <Button variant="primary" onClick={handleSubmit} loading={loading} disabled={!rating} fullWidth>Submit Feedback</Button>
-          <Button variant="ghost" onClick={onClose} fullWidth>Skip</Button>
+          <Button className={styles.skip} variant="ghost" onClick={onClose} fullWidth>Skip</Button>
         </div>
       </div>
     </div>
