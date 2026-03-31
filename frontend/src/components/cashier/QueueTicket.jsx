@@ -1,5 +1,6 @@
 import Button from "../common/Button";
 import styles from "./QueueTicket.module.css";
+import { Bell, SkipForward } from "lucide-react";
 
 const AUTO_CALL_NEXT = import.meta.env.VITE_AUTO_CALL_NEXT === "true";
 
@@ -51,15 +52,15 @@ const QueueTicket = ({ ticket, position, onServe, onSkip, onRepeat, showActions 
       {showActions && (
         <div className={styles.actions}>
           {isCalled && onRepeat && (
-            <Button variant="ghost" size="sm" onClick={() => onRepeat(ticket._id)}>
-              🔔 Repeat
+            <Button variant="ghost" size="sm" onClick={() => onRepeat(ticket._id)} icon={<Bell size={16} />}>
+              Repeat
             </Button>
           )}
           {isCalled && onServe && !AUTO_CALL_NEXT && (
             <Button variant="success" size="sm" onClick={() => onServe(ticket._id)}>✓ Serve</Button>
           )}
           {(isCalled || ticket.status === "waiting") && onSkip && (
-            <Button variant="danger" size="sm" onClick={() => onSkip(ticket._id)}>Skip</Button>
+            <Button variant="danger" size="sm" onClick={() => onSkip(ticket._id)} icon={<SkipForward size={16} />}>Skip</Button>
           )}
         </div>
       )}

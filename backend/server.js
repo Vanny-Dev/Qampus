@@ -98,6 +98,20 @@ app.get("/api/windows/active", (req, res) => {
   res.json({ activeWindows: windows });
 });
 
+const getBoardData = async () => {
+  const TOTAL_WINDOWS = 5;
+  const board = {};
+  for (let w = 1; w <= TOTAL_WINDOWS; w++) {
+    const ticket = await Queue.findOne({
+      serviceDate: new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Manila" }),
+      counter: w,
+      status: { $in: ["called", "serving"] },
+    }).sort({ calledAt: -1 });
+    board[w] = ticket || null;
+  }
+  return board;
+};
+
 const emit = {
   queueUpdated: (data) => io.to("queue:global").emit("queue:updated", data),
   ticketCalled: (ticketId, counter, data) => {
@@ -333,6 +347,24 @@ app.delete("/api/students/:id", protect, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── Display Board Route ─────────────────────────────────────────────────────
+// Returns currently active ticket per window (for the ViewAllQueues page)
+app.get("/api/queues/board", async (req, res, next) => {
+  try {
+    const TOTAL_WINDOWS = 5;
+    const board = {};
+    for (let w = 1; w <= TOTAL_WINDOWS; w++) {
+      const ticket = await Queue.findOne({
+        serviceDate: today(),
+        counter: w,
+        status: { $in: [STATUS.CALLED, STATUS.SERVING] },
+      }).sort({ calledAt: -1 });
+      board[w] = ticket || null;
+    }
+    res.json({ board });
+  } catch (err) { next(err); }
+});
+
 // ─── Queue Routes ─────────────────────────────────────────────────────────────
 app.get("/api/queue", async (req, res, next) => {
   try { res.json({ queue: await getTodayQueue() }); }
@@ -360,12 +392,12 @@ app.post("/api/queue/join", async (req, res, next) => {
     });
     if (existing) return res.status(409).json({ message: "You are already in the queue today." });
 
-    const skippedToday = await Queue.findOne({
+    // Limit: max 3 ticket requests per student per day (any status)
+    const todayCount = await Queue.countDocuments({
       serviceDate: today(),
       transactionType: studentNo,
-      status: STATUS.SKIPPED,
     });
-    if (skippedToday) return res.status(403).json({ message: "You were skipped today. Please approach the cashier directly to rejoin." });
+    if (todayCount >= 3) return res.status(429).json({ message: "You have reached the maximum of 3 queue requests for today." });
 
     const ticketNumber = await generateTicketNumber();
     const ticket = await Queue.create({
@@ -429,6 +461,8 @@ app.post("/api/queue/call-next", protect, async (req, res, next) => {
       message: `Ticket #${String(nextTicket.ticketNumber).padStart(3, "0")} — Please proceed to Cashier Window ${counter}`,
     });
     emit.analyticsUpdated(await getAnalyticsSnapshot());
+    const board = await getBoardData();
+    io.emit("board:updated", { board });
     res.json({ message: "Next payor called.", ticket: nextTicket, counterQueue });
   } catch (err) { next(err); }
 });
@@ -462,6 +496,8 @@ app.patch("/api/queue/:id/serve", protect, async (req, res, next) => {
     ]);
     emit.ticketServed(ticket._id.toString(), counter, { ticket, queue: globalQueue, counterQueue, waitingQueue });
     emit.analyticsUpdated(await getAnalyticsSnapshot());
+    const boardAfterServe = await getBoardData();
+    io.emit("board:updated", { board: boardAfterServe });
     res.json({ message: "Served.", ticket, counterQueue });
   } catch (err) { next(err); }
 });
@@ -512,7 +548,10 @@ app.get("/api/analytics/today", protect, async (req, res, next) => {
       ]),
       Queue.aggregate([
         { $match: { serviceDate: d } },
-        { $group: { _id: { $hour: "$createdAt" }, count: { $sum: 1 } } },
+        { $group: {
+          _id: { $hour: { date: "$createdAt", timezone: "Asia/Manila" } },
+          count: { $sum: 1 }
+        }},
         { $sort: { _id: 1 } },
       ]),
     ]);

@@ -41,7 +41,11 @@
   color: var(--text-primary);
 }
 
-.noData { color: var(--text-muted); font-size: 13px; }
+/* .avgWaitSeconds {
+  color: var(--text-secondary);
+} */
+
+.noData { color: var(--text-secondary); font-size: 13px; }
 
 /* Satisfaction */
 .avgRating {
@@ -151,7 +155,7 @@
 
 .barHour {
   font-size: 9px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: center;
   white-space: nowrap;
 }
@@ -191,7 +195,7 @@
 
 .historyDate {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   text-align: center;
   white-space: nowrap;
 }

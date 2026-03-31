@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "./NotFound.module.css";
+import { ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
   const { isAuthenticated } = useAuth();
@@ -20,7 +21,7 @@ export default function NotFound() {
           The page you're looking for doesn't exist or was moved.
         </p>
         <button className={styles.btn} onClick={handleGoBack}>
-          ← Go back
+          <ArrowLeft size={20}/> Go back
         </button>
       </div>
     </div>

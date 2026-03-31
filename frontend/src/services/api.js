@@ -52,6 +52,10 @@ export const windowsAPI = {
 };
 
 // ── Analytics
+export const boardAPI = {
+  getBoard: () => api.get("/queues/board"),
+};
+
 export const studentsAPI = {
   validate: (studentNo) => api.get(`/students/validate/${studentNo}`),
   getAll: () => api.get("/students"),

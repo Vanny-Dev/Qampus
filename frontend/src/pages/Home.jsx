@@ -7,15 +7,38 @@ import Button from "../components/common/Button";
 import { useToast } from "../components/common/Toast";
 import styles from "./Home.module.css";
 import useNotifications from "../hooks/useNotifications";
-import { LucideMessageCircleWarning } from "lucide-react"
+import Onboarding from "../components/common/Onboarding";
+import { Ticket, ListOrdered, LucideMessageCircleWarning } from "lucide-react";
 
 // ─── Feature flags ───────────────────────────────────────────────────────────
-const QUEUE_OPEN = import.meta.env.VITE_GET_MY_TICKET !== "false"; // default open
+const QUEUE_OPEN = import.meta.env.VITE_GET_MY_TICKET !== "false";
+
+// ─── iOS Audio Unlock ─────────────────────────────────────────────────────────
+// iOS requires a user gesture to unlock audio. We create and resume an
+// AudioContext on first tap so subsequent programmatic audio works.
+let audioUnlocked = false;
+const unlockAudio = () => {
+  if (audioUnlocked) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume().then(() => {
+      audioUnlocked = true;
+      ctx.close();
+    });
+    // Also prime speechSynthesis on iOS
+    if ("speechSynthesis" in window) {
+      const utter = new SpeechSynthesisUtterance("");
+      utter.volume = 0;
+      window.speechSynthesis.speak(utter);
+    }
+  } catch (e) { /* ignore */ }
+};
 
 // ─── Audio & Vibration ───────────────────────────────────────────────────────
 const playBeep = (type = "alert") => {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume(); // needed for iOS
     const configs = {
       warning: [
         { freq: 520, start: 0,    duration: 0.18, gain: 0.35 },
@@ -51,27 +74,35 @@ const vibrate = (pattern) => {
   if ("vibrate" in navigator) navigator.vibrate(pattern);
 };
 
-const speakAlert = (ticketNumber, windowNum) => {
+const speakText = (text, volume = 1) => {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
-  const text = `Please proceed to Cashier Window ${windowNum}.`;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "en-PH";
-  utter.rate = 0.9;
-  utter.pitch = 1;
-  utter.volume = 1;
-  window.speechSynthesis.speak(utter);
+
+  const speak = () => {
+    const utter = new SpeechSynthesisUtterance(text);
+    // iOS works best with en-US, en-PH may not be available
+    utter.lang = "en-US";
+    utter.rate = 0.9;
+    utter.pitch = 1;
+    utter.volume = volume;
+    // iOS sometimes needs a slight delay
+    setTimeout(() => window.speechSynthesis.speak(utter), 100);
+  };
+
+  // If voices aren't loaded yet (iOS), wait for them
+  if (window.speechSynthesis.getVoices().length === 0) {
+    window.speechSynthesis.addEventListener("voiceschanged", speak, { once: true });
+  } else {
+    speak();
+  }
+};
+
+const speakAlert = (ticketNumber, windowNum) => {
+  speakText(`Please proceed to Cashier Window ${windowNum}.`);
 };
 
 const speakWarning = (text) => {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "en-PH";
-  utter.rate = 0.9;
-  utter.pitch = 1;
-  utter.volume = 0.8;
-  window.speechSynthesis.speak(utter);
+  speakText(text, 0.9);
 };
 
 const notifyWarning = () => {
@@ -80,11 +111,9 @@ const notifyWarning = () => {
 };
 
 const notifyAlert = (ticket) => {
-  // When called to window: speech only, no beep or vibration
   if (ticket) {
     speakAlert(ticket.ticketNumber, ticket.counter || 1);
   } else {
-    // Fallback if no ticket info
     playBeep("alert");
     vibrate([400, 150, 400, 150, 600]);
   }
@@ -117,7 +146,7 @@ const FeedbackModal = ({ ticketId, onClose }) => {
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
-        {/* <div className={styles.modalEmoji}>🎉</div> */}
+        <div className={styles.modalEmoji}>🎉</div>
         <h2 className={styles.modalTitle}>Transaction Complete!</h2>
         <p className={styles.modalSub}>How was your experience today?</p>
         <div className={styles.stars}>
@@ -134,7 +163,7 @@ const FeedbackModal = ({ ticketId, onClose }) => {
         />
         <div className={styles.modalActions}>
           <Button variant="primary" onClick={handleSubmit} loading={loading} disabled={!rating} fullWidth>Submit Feedback</Button>
-          <Button className={styles.skip} variant="ghost" onClick={onClose} fullWidth>Skip</Button>
+          <Button variant="ghost" onClick={onClose} fullWidth>Skip</Button>
         </div>
       </div>
     </div>
@@ -197,6 +226,10 @@ const MyTicket = ({ ticket, position, onLeave }) => {
 
 // ─── Home Page ────────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => localStorage.getItem("qampus_onboarded") !== "true"
+  );
+
   const [studentNo, setStudentNo] = useState("");
   const [studentName, setStudentName] = useState("");
   const [studentNoError, setStudentNoError] = useState("");
@@ -213,7 +246,18 @@ export default function HomePage() {
   const [joining, setJoining] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [servedTicketId, setServedTicketId] = useState(null);
-  const notifiedRef = useRef({ thirdInLine: false, warning: false, alert: false });
+  const notifiedRef = useRef({ thirdInLine: false, warning: false, alert: false, alertSource: null });
+
+  // ── Unlock audio on first user interaction (iOS requirement) ──────────────
+  useEffect(() => {
+    const events = ["touchstart", "touchend", "mousedown", "keydown"];
+    const handler = () => {
+      unlockAudio();
+      events.forEach((e) => document.removeEventListener(e, handler));
+    };
+    events.forEach((e) => document.addEventListener(e, handler, { once: true }));
+    return () => events.forEach((e) => document.removeEventListener(e, handler));
+  }, []);
 
   useEffect(() => {
     if (myTicket) localStorage.setItem("qampus_ticket", JSON.stringify(myTicket));
@@ -235,7 +279,6 @@ export default function HomePage() {
       setValidating(false);
       return;
     }
-
     setValidating(true);
     const timer = setTimeout(async () => {
       try {
@@ -251,7 +294,6 @@ export default function HomePage() {
         setValidating(false);
       }
     }, 600);
-
     return () => clearTimeout(timer);
   }, [studentNo]);
 
@@ -269,8 +311,12 @@ export default function HomePage() {
         if (ticket.status === "called") {
           if (!notifiedRef.current.alert) {
             notifiedRef.current.alert = true;
-            notifyAlert(ticket);
-            sendNotification("NOTIFY_CALLED", { message: `Please proceed to Cashier Window ${ticket.counter || ""}.` });
+            setTimeout(() => {
+              if (notifiedRef.current.alertSource !== "socket") {
+                notifyAlert(ticket);
+                sendNotification("NOTIFY_CALLED", { message: `Please proceed to Cashier Window ${ticket.counter || ""}.` });
+              }
+            }, 500);
           }
         } else {
           if (position === 3 && !notifiedRef.current.thirdInLine) {
@@ -315,6 +361,8 @@ export default function HomePage() {
       [SOCKET_EVENTS.TICKET_CALLED]: ({ ticket }) => {
         if (ticket._id === myTicket?._id) {
           setMyTicket(ticket);
+          notifiedRef.current.alert = true;
+          notifiedRef.current.alertSource = "socket";
           notifyAlert(ticket);
           sendNotification("NOTIFY_CALLED", { message: `Please proceed to Cashier Window ${ticket.counter || ""}.` });
           addToast(`🔔 It's your turn! Proceed to Cashier Window ${ticket.counter || 1}.`, "alert", 8000);
@@ -364,10 +412,11 @@ export default function HomePage() {
   // ── Join queue ────────────────────────────────────────────────────────────
   const handleJoin = async () => {
     if (!studentValid) return;
+    unlockAudio(); // unlock on join button tap (user gesture)
     setJoining(true);
     try {
       const res = await queueAPI.join({ name: studentName || "Anonymous", transactionType: studentNo.trim() });
-      notifiedRef.current = { thirdInLine: false, warning: false, alert: false };
+      notifiedRef.current = { thirdInLine: false, warning: false, alert: false, alertSource: null };
       setMyTicket(res.data.ticket);
       addToast(`Ticket #${String(res.data.ticket.ticketNumber).padStart(3, "0")} — You've joined the queue!`, "success");
       setStudentNo("");
@@ -426,7 +475,6 @@ export default function HomePage() {
               <h2 className={styles.joinTitle}>Join the Queue</h2>
               <p className={styles.joinSub}>Enter your Student No. to get a virtual ticket</p>
               <div className={styles.form}>
-
                 {/* Student No. */}
                 <div className={styles.field}>
                   <label className={styles.label}>Student No. <span className={styles.required}>*</span></label>
@@ -434,7 +482,7 @@ export default function HomePage() {
                     <input
                       className={`${styles.input} ${studentNoError ? styles.inputError : studentValid ? styles.inputValid : ""}`}
                       type="text"
-                      placeholder="e.g. 00-00000"
+                      placeholder="00-00000"
                       value={studentNo}
                       onChange={(e) => {
                         setStudentNo(e.target.value);
@@ -453,7 +501,7 @@ export default function HomePage() {
                   </div>
                   {validating && <span className={styles.fieldHint}>🔍 Looking for this ID…</span>}
                   {!validating && studentNoError && <span className={styles.fieldError}>{studentNoError}</span>}
-                  {/* {!validating && studentValid && studentName && <span className={styles.fieldSuccess}>✓ {studentName}</span>} */}
+                  {!validating && studentValid && studentName && <span className={styles.fieldSuccess}>✓ {studentName}</span>}
                 </div>
 
                 {/* Full Name — disabled, auto-filled */}
@@ -483,7 +531,7 @@ export default function HomePage() {
                   disabled={!studentValid || validating || !QUEUE_OPEN}
                   fullWidth
                 >
-                  Get My Ticket →
+                  Get My Ticket <Ticket size={20} />
                 </Button>
               </div>
             </div>
@@ -501,7 +549,7 @@ export default function HomePage() {
               {loading && <p className={styles.empty}>Loading…</p>}
               {!loading && waiting.length === 0 && (
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>✓</div>
+                  <div className={styles.emptyIcon}><ListOrdered size={28} /></div>
                   <p>Queue is empty right now</p>
                 </div>
               )}
@@ -517,10 +565,12 @@ export default function HomePage() {
                     <div className={styles.rowName}>{q.name}</div>
                     <div className={styles.rowTx}>{q.transactionType}</div>
                   </div>
-                  <div className={styles.rowPos}>#{i + 1}</div>
-                  {myTicket && q._id === myTicket._id && (
-                    <span className={styles.youBadge}>You</span>
-                  )}
+                  <div className={styles.rowRight}>
+                    <span className={styles.rowPos}>#{i + 1}</span>
+                    {myTicket && q._id === myTicket._id && (
+                      <span className={styles.youBadge}>You</span>
+                    )}
+                  </div>
                 </div>
               ))}
               {waiting.length > 10 && (
@@ -536,6 +586,10 @@ export default function HomePage() {
           ticketId={servedTicketId || myTicket?._id}
           onClose={() => { setShowFeedback(false); setServedTicketId(null); }}
         />
+      )}
+
+      {showOnboarding && (
+        <Onboarding onDone={() => setShowOnboarding(false)} />
       )}
     </div>
   );

@@ -10,6 +10,7 @@ import CashierDashboard from "./pages/CashierDashboard";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import CashierSignup from "./pages/CashierSignup";
+import QueueBoard from "./pages/Queueboard";
 
 // ── Page titles ───────────────────────────────────────────────────────────────
 const TITLES = {
@@ -19,6 +20,7 @@ const TITLES = {
   "/cashier/analytics": "Analytics — Qampus",
   "/cashier/login": "Login — Qampus",
   "/cashier/signup": "Sign Up — Qampus",
+  "/queues": "All Queues — Qampus",
 };
 
 const TitleUpdater = () => {
@@ -113,6 +115,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/queues" element={<QueueBoard />} />
           <Route path="*" element={<NotFound />} />
         </PageTransition>
       </ToastProvider>

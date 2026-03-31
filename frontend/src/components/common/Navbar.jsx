@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./Navbar.module.css";
-import { LogIn, HomeIcon, LayoutDashboard, Activity, LogOut } from "lucide-react";
+import { LogIn, HomeIcon, LayoutDashboard, Activity, LogOut, List } from "lucide-react";
 import Logo from "../../assets/Logo.png";
 
 const Navbar = () => {
@@ -40,12 +40,15 @@ const Navbar = () => {
       <div className={styles.desktopLinks}>
         {/* Only show Home when NOT logged in */}
         {!isAuthenticated && (
-          <Link
+          <><Link
             to="/"
             className={`${styles.link} ${isActive("/") && !isActive("/cashier") ? styles.active : ""}`}
           >
             Home
           </Link>
+          <Link to="/queues" className={`${styles.link} ${isActive("/queues") ? styles.active : ""}`}>
+            All Queues
+          </Link></>
         )}
         {isAuthenticated ? (
           <>
@@ -91,7 +94,7 @@ const Navbar = () => {
             <div className={styles.drawerLinks}>
               {/* Only show Home when NOT logged in */}
               {!isAuthenticated && (
-                <Link
+                <><Link
                   to="/"
                   className={`${styles.drawerLink} ${isActive("/") && !isActive("/cashier") ? styles.drawerActive : ""}`}
                   onClick={closeMenu}
@@ -100,7 +103,12 @@ const Navbar = () => {
                     <HomeIcon size={18} />
                     Home
                   </div>
-                </Link>
+                </Link><Link to="/queues" className={styles.drawerLink} onClick={closeMenu}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
+                      <List size={18} />
+                      Queue Board
+                    </div>
+                  </Link></>
               )}
               {isAuthenticated ? (
                 <>
