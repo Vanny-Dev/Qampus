@@ -4,6 +4,7 @@ import { queueAPI, windowsAPI } from "../services/api";
 import { connectSocket, SOCKET_EVENTS } from "../services/socket";
 import useCashierQueue from "../hooks/useCashierQueue";
 import QueueTicket from "../components/cashier/QueueTicket";
+import CashierOnboarding from "../components/cashier/CashierOnboarding";
 import StatCard from "../components/common/StatCard";
 import Button from "../components/common/Button";
 import { useToast } from "../components/common/Toast";
@@ -20,6 +21,10 @@ export default function CashierDashboard() {
 
   const [activeWindows, setActiveWindows] = useState({});
   const [counter, setCounter] = useState(null);
+
+  const [showCashierOnboarding, setShowCashierOnboarding] = useState(
+    !localStorage.getItem("qampus_cashier_onboarded")
+  );
 
   // ── Init windows & auto-assign ─────────────────────────────
   useEffect(() => {
@@ -330,6 +335,10 @@ export default function CashierDashboard() {
           ))}
         </div>
       </section>
+
+      {showCashierOnboarding && (
+        <CashierOnboarding onDone={() => setShowCashierOnboarding(false)} />
+      )}
     </div>
   );
 }
