@@ -10,7 +10,7 @@ import CashierDashboard from "./pages/CashierDashboard";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import CashierSignup from "./pages/CashierSignup";
-import QueueBoard from "./pages/Queueboard";
+import QueueBoard from "./pages/QueueBoard";
 
 // ── Page titles ───────────────────────────────────────────────────────────────
 const TITLES = {
