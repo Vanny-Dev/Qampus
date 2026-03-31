@@ -60,7 +60,7 @@ export default function CashierLogin() {
             <input
               className={`${styles.input} ${error ? styles.inputError : ""}`}
               type="text"
-              placeholder="cashier1"
+              placeholder="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               autoComplete="username"
