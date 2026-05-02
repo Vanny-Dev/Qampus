@@ -11,17 +11,36 @@ const app = express();
 const server = http.createServer(app);
 
 // ─── CORS Configuration (RAILWAY OPTIMIZED) ──────────────────────────────────
+
+// const corsOptions = {
+//   origin: true,
+//   credentials: true,
+//   methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   exposedHeaders: ["Content-Length"],
+//   maxAge: 86400,
+// };
+
+// app.use(cors(corsOptions));
+// app.options('*', cors(corsOptions));
+
+const allowedOrigins = [
+  "https://qampus-production.up.railway.app",
+];
+
 const corsOptions = {
-  origin: true,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
-  methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Content-Length"],
-  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // ─── Socket.io ────────────────────────────────────────────────────────────────
 const io = new Server(server, {
