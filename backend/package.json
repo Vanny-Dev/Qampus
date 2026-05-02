@@ -18,12 +18,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
-<<<<<<< HEAD
   },
   "keywords": [],
   "author": "",
   "license": "ISC"
-=======
-  }
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
 }
