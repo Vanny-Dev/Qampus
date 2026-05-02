@@ -430,7 +430,6 @@ export default function HomePage() {
     }
   };
 
-<<<<<<< HEAD
   // ─── Name Masking ─────────────────────────────────────────────────────────────
   const maskName = (fullName) => {
     if (!fullName) return "";
@@ -460,8 +459,6 @@ export default function HomePage() {
       .join(" ");
   };
 
-=======
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   const handleLeave = async () => {
     if (!myTicket) return;
     try { await queueAPI.skip(myTicket._id); } catch {/* may already be gone */}
@@ -533,11 +530,7 @@ export default function HomePage() {
                   </div>
                   {validating && <span className={styles.fieldHint}>🔍 Looking for this ID…</span>}
                   {!validating && studentNoError && <span className={styles.fieldError}>{studentNoError}</span>}
-<<<<<<< HEAD
                   {/* {!validating && studentValid && studentName && <span className={styles.fieldSuccess}>✓ {studentName}</span>} */}
-=======
-                  {!validating && studentValid && studentName && <span className={styles.fieldSuccess}>✓ {studentName}</span>}
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
                 </div>
 
                 {/* Full Name — disabled, auto-filled */}
@@ -547,11 +540,7 @@ export default function HomePage() {
                     className={`${styles.input} ${styles.inputDisabled}`}
                     type="text"
                     placeholder="Auto-filled from Student ID"
-<<<<<<< HEAD
                     value={maskName(studentName)}
-=======
-                    value={studentName}
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
                     disabled
                     readOnly
                   />

@@ -37,7 +37,6 @@ const io = new Server(server, {
   pingInterval: 25000,
 });
 
-<<<<<<< HEAD
 // ─── API Key Middleware ───────────────────────────────────────────────────────
 const API_KEYS = new Set(
   (process.env.API_KEYS || "").split(",").map((k) => k.trim()).filter(Boolean)
@@ -57,8 +56,6 @@ const requireApiKey = (req, res, next) => {
   next();
 };
 
-=======
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
 const activeWindows = new Map();
 
 const broadcastActiveWindows = () => {
@@ -318,11 +315,7 @@ app.post("/api/auth/seed", async (req, res, next) => {
 });
 
 // ─── Student Routes ───────────────────────────────────────────────────────────
-<<<<<<< HEAD
 app.get("/api/students/validate/:studentNo", requireApiKey, async (req, res, next) => {
-=======
-app.get("/api/students/validate/:studentNo", async (req, res, next) => {
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   try {
     const studentNo = req.params.studentNo.trim().toUpperCase();
     const student = await Student.findOne({ studentNo, isActive: true });
@@ -375,11 +368,7 @@ app.delete("/api/students/:id", protect, async (req, res, next) => {
 
 // ─── Display Board Route ─────────────────────────────────────────────────────
 // Returns currently active ticket per window (for the ViewAllQueues page)
-<<<<<<< HEAD
 app.get("/api/queues/board", requireApiKey, async (req, res, next) => {
-=======
-app.get("/api/queues/board", async (req, res, next) => {
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   try {
     const TOTAL_WINDOWS = 5;
     const board = {};
@@ -396,20 +385,12 @@ app.get("/api/queues/board", async (req, res, next) => {
 });
 
 // ─── Queue Routes ─────────────────────────────────────────────────────────────
-<<<<<<< HEAD
 app.get("/api/queue", requireApiKey, async (req, res, next) => {
-=======
-app.get("/api/queue", async (req, res, next) => {
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   try { res.json({ queue: await getTodayQueue() }); }
   catch (err) { next(err); }
 });
 
-<<<<<<< HEAD
 app.post("/api/queue/join", requireApiKey, async (req, res, next) => {
-=======
-app.post("/api/queue/join", async (req, res, next) => {
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   try {
     const { name, transactionType } = req.body;
     if (!transactionType) return res.status(400).json({ message: "Student No. is required." });
@@ -463,11 +444,7 @@ app.get("/api/queue/counter/:counter", protect, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-<<<<<<< HEAD
 app.get("/api/queue/:id", requireApiKey, async (req, res, next) => {
-=======
-app.get("/api/queue/:id", async (req, res, next) => {
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   try {
     const ticket = await Queue.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found." });
@@ -560,11 +537,7 @@ app.patch("/api/queue/:id/skip", protect, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-<<<<<<< HEAD
 app.post("/api/queue/:id/feedback", requireApiKey, async (req, res, next) => {
-=======
-app.post("/api/queue/:id/feedback", async (req, res, next) => {
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   try {
     const { rating, comment } = req.body;
     if (!rating || rating < 1 || rating > 5) return res.status(400).json({ message: "Rating must be 1–5." });

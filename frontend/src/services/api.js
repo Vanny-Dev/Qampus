@@ -5,18 +5,11 @@ const api = axios.create({
   withCredentials: true,
 });
 
-<<<<<<< HEAD
 // Attach JWT and API key to every request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("qampus_token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   config.headers["x-api-key"] = import.meta.env.VITE_API_KEY;
-=======
-// Attach JWT to every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("qampus_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
->>>>>>> b6e2cb5a40c70c0ea2c3d3899d3de0f5aa65cd6c
   return config;
 });
 
